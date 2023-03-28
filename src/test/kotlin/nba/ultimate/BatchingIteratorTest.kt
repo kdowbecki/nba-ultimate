@@ -1,0 +1,18 @@
+package nba.ultimate
+
+import kotlin.test.Test
+import kotlin.test.assertContentEquals
+
+
+class BatchingIteratorTest {
+
+  @Test
+  fun `should batch iteration`() {
+    val numbers = 1..7
+    val it = BatchingIterator(numbers.iterator(), 3)
+    assertContentEquals(1..3, it.next())
+    assertContentEquals(4..6, it.next())
+    assertContentEquals(7..7, it.next())
+  }
+
+}

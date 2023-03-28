@@ -1,0 +1,13 @@
+### Intellij ###
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+### Gradle ###
+.gradle
+build/
+
+# Ensure that gradle wrapper jar is committed
+!gradle-wrapper.jar
