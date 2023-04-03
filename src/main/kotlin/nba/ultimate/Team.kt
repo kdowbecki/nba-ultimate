@@ -1,7 +1,6 @@
 package nba.ultimate
 
 import org.apache.commons.math3.util.CombinatoricsUtils
-import java.math.BigDecimal
 
 /**
  * Team of players.
@@ -27,7 +26,7 @@ class Team(val playerIds: IntArray) {
 /**
  * Score of a team.
  */
-class TeamScore(val team: Team, val score: BigDecimal) {
+class TeamScore(val team: Team, val score: Float) {
 
   override fun toString() = "$team $score"
 
@@ -41,6 +40,7 @@ object Teams {
   val count: Int
 
   init {
+    // TODO avoid BigInteger if we can fit values into Long
     var n = Players.count.toBigInteger()
     for (i in 1 until size) {
       n = n.multiply((Players.count - i).toBigInteger())

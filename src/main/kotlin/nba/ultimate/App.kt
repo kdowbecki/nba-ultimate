@@ -14,11 +14,10 @@ const val batchTimeoutMillis = 300_000L
 
 private val log = KotlinLogging.logger {}
 
+private val totalBatches = ceil(Teams.count.toFloat() / batchSize).toInt()
 private val teamScoresApi = TeamScoresApi(baseUrl)
 
 fun main() {
-  val totalBatches = ceil(Teams.count.toDouble() / batchSize).toInt()
-
   TeamScoreDao(databasePath).use { teamScoreDao ->
     val batchIterator = BatchingIterator(Teams.iterator(), batchSize)
     batchIterator.skipBatches(batchNumResume)
@@ -27,30 +26,31 @@ fun main() {
       // TODO this where we want to start coroutines, to async check the team before making an HTTP call
       val teamsWithNoScore = teams.filter { teamScoreDao.hasNoTeamScore(it) }
       if (teamsWithNoScore.isEmpty()) {
-        logProgress(totalBatches, batch, "Empty batch $batch")
+        log(batch, "Empty batch")
       } else {
-        logProgress(totalBatches, batch, "Starting batch $batch")
-
+        log(batch, "Starting batch")
         process(teams, teamScoreDao)
-
         Thread.sleep(batchSleepMillis)
       }
+
       batch++
     }
   }
 }
 
-
-private fun process(teams: List<Team>, teamScoreDao: TeamScoreDao) {
+private fun process(teams: List<Team>, dao: TeamScoreDao) {
   val futures = teams
     .map { teamScoresApi.asyncTeamScore(it) }
     .toTypedArray()
   CompletableFuture.allOf(*futures).get(batchTimeoutMillis, TimeUnit.MILLISECONDS)
   val teamScores = futures.map { it.get() }
-  teamScoreDao.batchInsertTeamScores(teamScores)
+  dao.batchInsertTeamScores(teamScores)
 }
 
-private fun logProgress(total: Int, current: Int, message: String) {
-  log.info { "[${"%.2f%%".format(current.toDouble() * 100 / total.toDouble())}] $message" }
+private fun log(batch: Int, message: String) {
+  log.info {
+    val progress = 100f * batch / totalBatches
+    "[${"%.2f%%".format(progress)}] [$batch] $message"
+  }
 }
 
