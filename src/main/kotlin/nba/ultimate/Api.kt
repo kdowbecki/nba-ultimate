@@ -1,6 +1,8 @@
 package nba.ultimate
 
-import java.math.BigDecimal
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -35,22 +37,18 @@ class TeamScoresApi(private val baseUrl: String) {
       .build()
 
     return client.sendAsync(request, bodyToString)
-      .thenApply { parseScore(it.body()) }
-      .thenApply { TeamScore(team, it) }
+      .thenApply { resp -> parseScore(resp.body()) }
+      .thenApply { score -> TeamScore(team, score) }
   }
 
-  private fun parseScore(body: String): BigDecimal {
-    try {
-      // TODO what's the best way to map JSON to an object in Kotlin without external library?
-      return body
-        .filter { it.isDigit() || it == '.' || it == ',' }
-        .toBigDecimal()
-    } catch (ex: NumberFormatException) {
-      throw ApiException("Unexpected score response body: $body", ex)
-    }
+  private fun parseScore(body: String): Float {
+    // The JSON is in [[{"score":967.29}]] format
+    val data = Json.decodeFromString<List<List<Score>>>(body)
+    return data[0][0].score
   }
 
 }
 
+@Serializable
+data class Score(val score: Float)
 
-class ApiException(message: String, cause: Throwable) : RuntimeException(message, cause)

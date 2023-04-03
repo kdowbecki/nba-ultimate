@@ -12,10 +12,15 @@ class BatchingIterator<T>(private val iterator: Iterator<T>, private val batchSi
     for (i in 1..batchSize) {
       batch.add(iterator.next())
       if (!iterator.hasNext()) {
+        // handles gracefully last batch which can be shorter
         break
       }
     }
     return batch
+  }
+
+  fun skipBatches(batchCount: Int) {
+    for (i in 1..batchCount * batchSize) iterator.next()
   }
 
 }

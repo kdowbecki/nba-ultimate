@@ -68,7 +68,7 @@ class TeamScoreDao(databasePath: String) : SqlLiteDatabase(databasePath) {
         for (playerId in score.team.playerIds) {
           stmt.setInt(i++, playerId)
         }
-        stmt.setBigDecimal(i, score.score)
+        stmt.setFloat(i, score.score)
         stmt.addBatch()
       }
       safeExecuteBatch(stmt, scores.size)
