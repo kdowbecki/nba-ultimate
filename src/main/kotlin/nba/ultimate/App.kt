@@ -14,39 +14,40 @@ const val batchTimeoutMillis = 300_000L
 
 private val log = KotlinLogging.logger {}
 
+private val teamScoresApi = TeamScoresApi(baseUrl)
 
 fun main() {
-  val teamScoresApi = TeamScoresApi(baseUrl)
-
   val totalBatches = ceil(Teams.count.toDouble() / batchSize).toInt()
 
   TeamScoreDao(databasePath).use { teamScoreDao ->
-    var batchNum = 0
     val batchIterator = BatchingIterator(Teams.iterator(), batchSize)
-    batchIterator.forEachRemaining { teams ->
-      // resume from specific point
-      if (batchNum++ < batchNumResume) {
-        return@forEachRemaining
-      }
-
-      // ignore already processed teams within batch
+    batchIterator.skipBatches(batchNumResume)
+    var batch = batchNumResume
+    batchIterator.forEach { teams ->
+      // TODO this where we want to start coroutines, to async check the team before making an HTTP call
       val teamsWithNoScore = teams.filter { teamScoreDao.hasNoTeamScore(it) }
-
       if (teamsWithNoScore.isEmpty()) {
-        logProgress(totalBatches, batchNum, "Empty batch $batchNum")
+        logProgress(totalBatches, batch, "Empty batch $batch")
       } else {
-        logProgress(totalBatches, batchNum, "Starting batch $batchNum")
+        logProgress(totalBatches, batch, "Starting batch $batch")
 
-        val futures = teamsWithNoScore
-          .map { teamScoresApi.asyncTeamScore(it) }
-          .toTypedArray()
-        CompletableFuture.allOf(*futures).get(batchTimeoutMillis, TimeUnit.MILLISECONDS)
-        teamScoreDao.batchInsertTeamScores(futures.map { it.get() })
+        process(teams, teamScoreDao)
 
         Thread.sleep(batchSleepMillis)
       }
+      batch++
     }
   }
+}
+
+
+private fun process(teams: List<Team>, teamScoreDao: TeamScoreDao) {
+  val futures = teams
+    .map { teamScoresApi.asyncTeamScore(it) }
+    .toTypedArray()
+  CompletableFuture.allOf(*futures).get(batchTimeoutMillis, TimeUnit.MILLISECONDS)
+  val teamScores = futures.map { it.get() }
+  teamScoreDao.batchInsertTeamScores(teamScores)
 }
 
 private fun logProgress(total: Int, current: Int, message: String) {

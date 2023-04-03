@@ -60,6 +60,7 @@ object Teams {
 
 private class AllPossibleTeamIterator : Iterator<Team> {
 
+  // TODO avoid the skip altogether by generating a combination from a starting point
   private val combinations: MutableIterator<IntArray> =
     CombinatoricsUtils.combinationsIterator(Players.count, Teams.size)
 

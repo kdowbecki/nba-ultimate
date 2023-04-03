@@ -15,4 +15,12 @@ class BatchingIteratorTest {
     assertContentEquals(7..7, it.next())
   }
 
+  @Test
+  fun `should skip batches`() {
+    val numbers = 1..12
+    val it = BatchingIterator(numbers.iterator(), 3)
+    it.skipBatches(3)
+    assertContentEquals(10..12, it.next())
+  }
+
 }
