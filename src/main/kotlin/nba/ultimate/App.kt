@@ -14,42 +14,43 @@ const val batchTimeoutMillis = 300_000L
 
 private val log = KotlinLogging.logger {}
 
+private val totalBatches = ceil(Teams.count.toFloat() / batchSize).toInt()
+private val teamScoresApi = TeamScoresApi(baseUrl)
 
 fun main() {
-  val teamScoresApi = TeamScoresApi(baseUrl)
-
-  val totalBatches = ceil(Teams.count.toDouble() / batchSize).toInt()
-
   TeamScoreDao(databasePath).use { teamScoreDao ->
-    var batchNum = 0
     val batchIterator = BatchingIterator(Teams.iterator(), batchSize)
-    batchIterator.forEachRemaining { teams ->
-      // resume from specific point
-      if (batchNum++ < batchNumResume) {
-        return@forEachRemaining
-      }
-
-      // ignore already processed teams within batch
+    batchIterator.skipBatches(batchNumResume)
+    var batch = batchNumResume
+    batchIterator.forEach { teams ->
+      // TODO this where we want to start coroutines, to async check the team before making an HTTP call
       val teamsWithNoScore = teams.filter { teamScoreDao.hasNoTeamScore(it) }
-
       if (teamsWithNoScore.isEmpty()) {
-        logProgress(totalBatches, batchNum, "Empty batch $batchNum")
+        log(batch, "Empty batch")
       } else {
-        logProgress(totalBatches, batchNum, "Starting batch $batchNum")
-
-        val futures = teamsWithNoScore
-          .map { teamScoresApi.asyncTeamScore(it) }
-          .toTypedArray()
-        CompletableFuture.allOf(*futures).get(batchTimeoutMillis, TimeUnit.MILLISECONDS)
-        teamScoreDao.batchInsertTeamScores(futures.map { it.get() })
-
+        log(batch, "Starting batch")
+        process(teams, teamScoreDao)
         Thread.sleep(batchSleepMillis)
       }
+
+      batch++
     }
   }
 }
 
-private fun logProgress(total: Int, current: Int, message: String) {
-  log.info { "[${"%.2f%%".format(current.toDouble() * 100 / total.toDouble())}] $message" }
+private fun process(teams: List<Team>, dao: TeamScoreDao) {
+  val futures = teams
+    .map { teamScoresApi.asyncTeamScore(it) }
+    .toTypedArray()
+  CompletableFuture.allOf(*futures).get(batchTimeoutMillis, TimeUnit.MILLISECONDS)
+  val teamScores = futures.map { it.get() }
+  dao.batchInsertTeamScores(teamScores)
+}
+
+private fun log(batch: Int, message: String) {
+  log.info {
+    val progress = 100f * batch / totalBatches
+    "[${"%.2f%%".format(progress)}] [$batch] $message"
+  }
 }
 

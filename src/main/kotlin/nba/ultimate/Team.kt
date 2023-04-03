@@ -1,7 +1,6 @@
 package nba.ultimate
 
 import org.apache.commons.math3.util.CombinatoricsUtils
-import java.math.BigDecimal
 
 /**
  * Team of players.
@@ -27,7 +26,7 @@ class Team(val playerIds: IntArray) {
 /**
  * Score of a team.
  */
-class TeamScore(val team: Team, val score: BigDecimal) {
+class TeamScore(val team: Team, val score: Float) {
 
   override fun toString() = "$team $score"
 
@@ -38,21 +37,7 @@ class TeamScore(val team: Team, val score: BigDecimal) {
  */
 object Teams {
   const val size = 5
-  val count: Int
-
-  init {
-    var n = Players.count.toBigInteger()
-    for (i in 1 until size) {
-      n = n.multiply((Players.count - i).toBigInteger())
-    }
-
-    var k = size.toBigInteger()
-    for (i in 1 until size) {
-      k = k.multiply((size - i).toBigInteger())
-    }
-
-    count = n.divide(k).toInt()
-  }
+  val count = binomialCoefficient(Players.count, size)
 
   fun iterator(): Iterator<Team> = AllPossibleTeamIterator()
 }
@@ -60,6 +45,7 @@ object Teams {
 
 private class AllPossibleTeamIterator : Iterator<Team> {
 
+  // TODO avoid the skip altogether by generating a combination from a starting point
   private val combinations: MutableIterator<IntArray> =
     CombinatoricsUtils.combinationsIterator(Players.count, Teams.size)
 

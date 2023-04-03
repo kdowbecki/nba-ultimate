@@ -1,5 +1,6 @@
 plugins {
-  id("org.jetbrains.kotlin.jvm").version("1.8.10")
+  kotlin("jvm") version "1.8.10"
+  kotlin("plugin.serialization") version "1.8.10"
   application
 }
 
@@ -9,9 +10,9 @@ repositories {
 
 dependencies {
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+  implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
   implementation("org.apache.commons:commons-math3:3.6.1")
   implementation("org.xerial:sqlite-jdbc:3.41.2.1")
-
   implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
   implementation("org.slf4j:slf4j-simple:2.0.7")
 
