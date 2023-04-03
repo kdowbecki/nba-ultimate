@@ -41,7 +41,12 @@ class TeamTest {
 class TeamsTest {
 
   @Test
-  fun `should iterate all possible teams`() {
+  fun `should have a known total`() {
+    assertEquals(18_474_840, Teams.count)
+  }
+
+  @Test
+  fun `should iterate over all possible teams`() {
     var total = 0
     Teams.iterator().forEachRemaining { total++ }
     assertEquals(Teams.count, total)

@@ -37,22 +37,7 @@ class TeamScore(val team: Team, val score: Float) {
  */
 object Teams {
   const val size = 5
-  val count: Int
-
-  init {
-    // TODO avoid BigInteger if we can fit values into Long
-    var n = Players.count.toBigInteger()
-    for (i in 1 until size) {
-      n = n.multiply((Players.count - i).toBigInteger())
-    }
-
-    var k = size.toBigInteger()
-    for (i in 1 until size) {
-      k = k.multiply((size - i).toBigInteger())
-    }
-
-    count = n.divide(k).toInt()
-  }
+  val count = binomialCoefficient(Players.count, size)
 
   fun iterator(): Iterator<Team> = AllPossibleTeamIterator()
 }
