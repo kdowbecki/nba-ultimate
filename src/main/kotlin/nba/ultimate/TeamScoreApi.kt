@@ -17,7 +17,7 @@ import java.util.concurrent.CompletableFuture
 /**
  * Api for team scores written with default JDK HttpClient.
  */
-class TeamScoresApi(private val baseUrl: String) {
+class TeamScoreApi(private val baseUrl: String) {
 
   companion object {
     const val scoresPath = "v1/scores"

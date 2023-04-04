@@ -4,6 +4,7 @@ import mu.KotlinLogging
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 import kotlin.math.ceil
+import kotlin.math.roundToInt
 
 const val databasePath = "./data/data.db"
 const val baseUrl = "https://us-central1-nba-75-prod.cloudfunctions.net"
@@ -12,10 +13,10 @@ const val batchNumResume = 9_000
 const val batchSleepMillis = 30_000L
 const val batchTimeoutMillis = 300_000L
 
-private val log = KotlinLogging.logger {}
+private val totalBatches = ceil(Teams.count.toFloat() / batchSize).roundToInt()
+private val teamScoreApi = TeamScoreApi(baseUrl)
 
-private val totalBatches = ceil(Teams.count.toFloat() / batchSize).toInt()
-private val teamScoresApi = TeamScoresApi(baseUrl)
+private val log = KotlinLogging.logger {}
 
 fun main() {
   TeamScoreDao(databasePath).use { teamScoreDao ->
@@ -40,7 +41,7 @@ fun main() {
 
 private fun process(teams: List<Team>, dao: TeamScoreDao) {
   val futures = teams
-    .map { teamScoresApi.asyncTeamScore(it) }
+    .map { teamScoreApi.asyncTeamScore(it) }
     .toTypedArray()
   CompletableFuture.allOf(*futures).get(batchTimeoutMillis, TimeUnit.MILLISECONDS)
   val teamScores = futures.map { it.get() }

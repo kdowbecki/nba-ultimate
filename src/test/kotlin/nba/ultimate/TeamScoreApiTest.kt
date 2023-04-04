@@ -17,12 +17,12 @@ class TeamScoreApiTest {
 
   private val team = Team(intArrayOf(1, 2, 3, 4, 5))
 
-  private lateinit var teamScoreApi: TeamScoresApi
+  private lateinit var teamScoreApi: TeamScoreApi
 
   @BeforeEach
   fun setUp(info: WireMockRuntimeInfo) {
     info.wireMock.resetMappings()
-    teamScoreApi = TeamScoresApi("https://localhost:${info.httpsPort}")
+    teamScoreApi = TeamScoreApi("https://localhost:${info.httpsPort}")
   }
 
   @Test

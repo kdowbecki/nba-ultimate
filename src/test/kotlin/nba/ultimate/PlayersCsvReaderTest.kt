@@ -23,5 +23,4 @@ class PlayersCsvReaderTest {
     assertEquals("Failed to open missing.csv for reading", ex.message)
   }
 
-
 }
