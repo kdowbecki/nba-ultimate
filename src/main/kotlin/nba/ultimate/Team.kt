@@ -45,7 +45,7 @@ object Teams {
 
 private class AllPossibleTeamIterator : Iterator<Team> {
 
-  // TODO avoid the skip altogether by generating a combination from a starting point
+  // TODO Allow to set a starting point from which to generate combination to remove BatchingProcessor.skipBatches()
   private val combinations: MutableIterator<IntArray> =
     CombinatoricsUtils.combinationsIterator(Players.count, Teams.size)
 

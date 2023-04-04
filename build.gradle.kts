@@ -11,13 +11,16 @@ repositories {
 dependencies {
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
   implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
+  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
   implementation("org.apache.commons:commons-math3:3.6.1")
   implementation("org.xerial:sqlite-jdbc:3.41.2.1")
+
   implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
-  implementation("org.slf4j:slf4j-simple:2.0.7")
+  implementation("ch.qos.logback:logback-classic:1.4.6")
 
   testImplementation(kotlin("test"))
   testImplementation("com.github.tomakehurst:wiremock-jre8-standalone:2.35.0")
+  testImplementation("io.mockk:mockk:1.13.4")
 }
 
 tasks.test {
@@ -26,7 +29,7 @@ tasks.test {
     events("PASSED", "SKIPPED", "FAILED")
   }
 
-  // TODO WireMock by default uses own self signed certificates
+  // TODO How to load WireMock self-signed certificates?
   systemProperty("jdk.internal.httpclient.disableHostnameVerification", "true")
   systemProperty("javax.net.ssl.trustStore", "src/test/resources/keystore")
 }
