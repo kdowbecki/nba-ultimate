@@ -1,18 +1,28 @@
 package nba.ultimate
 
+import java.nio.file.Files
+import java.nio.file.Path
 import java.sql.Connection
 import java.sql.DriverManager
 import java.sql.PreparedStatement
+import kotlin.io.path.notExists
 
 
-abstract class SqlLiteDatabase(databasePath: String) : AutoCloseable {
+abstract class SqlLiteDatabase(databasePath: Path) : AutoCloseable {
 
   protected val connection: Connection
 
+  private val initPath = Path.of("data", "init.db")
+
   init {
-    connection = DriverManager.getConnection("jdbc:sqlite:${databasePath}")
+    initialize(databasePath)
+    connection = DriverManager.getConnection("jdbc:sqlite:$databasePath")
     connection.autoCommit = false
     connection.isValid(0)
+  }
+
+  private fun initialize(databasePath: Path) {
+    if (databasePath.notExists()) Files.copy(initPath, databasePath)
   }
 
   protected fun safeExecuteBatch(stmt: PreparedStatement, expected: Int) {
@@ -31,7 +41,7 @@ abstract class SqlLiteDatabase(databasePath: String) : AutoCloseable {
 }
 
 
-class TeamScoreDao(databasePath: String) : SqlLiteDatabase(databasePath) {
+class TeamScoreDao(databasePath: Path) : SqlLiteDatabase(databasePath) {
 
   fun hasTeamScore(team: Team): Boolean {
     val sql = """

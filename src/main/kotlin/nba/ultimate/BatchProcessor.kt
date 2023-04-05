@@ -18,6 +18,7 @@ abstract class BatchProcessor<T, V> {
 
 }
 
+
 abstract class ProgressLoggingBatchProcessor<T, V>(
   private var current: Int,
   private val total: Int
