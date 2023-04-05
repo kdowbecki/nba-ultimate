@@ -6,7 +6,6 @@ package nba.ultimate
 class PlayersCsvReader(private val classpathResource: String) {
 
   fun readPlayerNamesById(): Map<Int, String> {
-    // TODO how is null getResourceAsStream() returned? Can I avoid requireNotNull with !!
     this::class.java.getResourceAsStream(classpathResource).use { input ->
       requireNotNull(input) { "Failed to open $classpathResource for reading" }
 

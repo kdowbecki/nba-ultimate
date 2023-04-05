@@ -33,8 +33,6 @@ abstract class SqlLiteDatabase(databasePath: String) : AutoCloseable {
 
 class TeamScoreDao(databasePath: String) : SqlLiteDatabase(databasePath) {
 
-  fun hasNoTeamScore(team: Team) = !hasTeamScore(team)
-
   fun hasTeamScore(team: Team): Boolean {
     val sql = """
       SELECT count(*) 

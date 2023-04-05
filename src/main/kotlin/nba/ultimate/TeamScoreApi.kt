@@ -7,17 +7,14 @@ import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
-import java.util.concurrent.CompletableFuture
-
-// TODO This class can be converted from Java's CompletableFuture to Kotlin's coroutines.
 
 // TODO On Java 11 HttpClient fails somewhere between 100-200 concurrent HTTP/2 requests, I wonder if
-//   Apache HttpClient 5 would be more stable
+//   Apache HttpClient 5 would be more stable?
 
 /**
  * Api for team scores written with default JDK HttpClient.
  */
-class TeamScoresApi(private val baseUrl: String) {
+class TeamScoreApi(private val baseUrl: String) {
 
   companion object {
     const val scoresPath = "v1/scores"
@@ -29,16 +26,12 @@ class TeamScoresApi(private val baseUrl: String) {
 
   private val bodyToString = HttpResponse.BodyHandlers.ofString()
 
-  fun asyncTeamScore(team: Team): CompletableFuture<TeamScore> {
+  fun getTeamScore(team: Team): TeamScore {
     val uri = URI.create("$baseUrl/$scoresPath/${team.id}")
-
-    val request = HttpRequest.newBuilder()
-      .uri(uri)
-      .build()
-
-    return client.sendAsync(request, bodyToString)
-      .thenApply { resp -> parseScore(resp.body()) }
-      .thenApply { score -> TeamScore(team, score) }
+    val request = HttpRequest.newBuilder(uri).build()
+    val resp = client.send(request, bodyToString)
+    val score = parseScore(resp.body())
+    return TeamScore(team, score)
   }
 
   private fun parseScore(body: String): Float {
@@ -50,5 +43,4 @@ class TeamScoresApi(private val baseUrl: String) {
 }
 
 @Serializable
-data class Score(val score: Float)
-
+private data class Score(val score: Float)
