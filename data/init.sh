@@ -3,4 +3,4 @@
 # Run this script to initialize SQLite database
 #
 
-sqlite3 data.db < init.sql
+sqlite3 init.db < init.sql

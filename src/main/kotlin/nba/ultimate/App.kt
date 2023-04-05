@@ -1,9 +1,12 @@
 package nba.ultimate
 
+import java.nio.file.Path
 import kotlin.math.ceil
 
-const val databasePath = "./data/data.db"
+private val databasePath = Path.of("data", "data.db")
+
 const val baseUrl = "https://us-central1-nba-75-prod.cloudfunctions.net"
+
 const val batchSize = 10
 const val batchCurrent = 9_000
 const val batchSleepMillis = 10L
