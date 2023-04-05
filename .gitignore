@@ -11,3 +11,8 @@ build/
 
 # Ensure that gradle wrapper jar is committed
 !gradle-wrapper.jar
+
+### Data ###
+
+# Only initial empty data.db is commited
+data.db
