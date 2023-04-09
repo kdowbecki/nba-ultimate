@@ -1,11 +1,15 @@
 package nba.ultimate
 
+import mu.KotlinLogging
 import java.nio.file.Files
 import java.nio.file.Path
 import java.sql.Connection
 import java.sql.DriverManager
 import java.sql.PreparedStatement
 import kotlin.io.path.notExists
+
+
+private val log = KotlinLogging.logger {}
 
 
 abstract class SqlLiteDatabase(databasePath: Path) : AutoCloseable {
@@ -60,7 +64,13 @@ class TeamScoreDao(databasePath: Path) : SqlLiteDatabase(databasePath) {
       }
       stmt.executeQuery().use { rs ->
         rs.next()
-        return rs.getInt(1) > 0
+        val hasScore = rs.getInt(1) > 0
+        if (hasScore) {
+          log.info { "Team $team has score" }
+        } else {
+          log.info { "Team $team doesn't have score" }
+        }
+        return hasScore
       }
     }
   }
@@ -80,6 +90,7 @@ class TeamScoreDao(databasePath: Path) : SqlLiteDatabase(databasePath) {
         stmt.addBatch()
       }
       safeExecuteBatch(stmt, scores.size)
+      log.info { "Inserted ${scores.size} team scores" }
     }
   }
 

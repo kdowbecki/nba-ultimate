@@ -7,7 +7,6 @@ import kotlin.test.Test
 class TeamBatchProcessorTest {
 
   private val dao = mockk<TeamScoreDao>()
-
   private val api = mockk<TeamScoreApi>()
 
   @Test

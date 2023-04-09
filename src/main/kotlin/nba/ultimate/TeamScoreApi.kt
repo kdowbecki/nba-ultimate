@@ -3,10 +3,15 @@ package nba.ultimate
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import mu.KotlinLogging
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
+
+
+private val log = KotlinLogging.logger {}
+
 
 // TODO On Java 11 HttpClient fails somewhere between 100-200 concurrent HTTP/2 requests, I wonder if
 //   Apache HttpClient 5 would be more stable?
@@ -31,6 +36,7 @@ class TeamScoreApi(private val baseUrl: String) {
     val request = HttpRequest.newBuilder(uri).build()
     val resp = client.send(request, bodyToString)
     val score = parseScore(resp.body())
+    log.info { "Got team $team score $score" }
     return TeamScore(team, score)
   }
 
