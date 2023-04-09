@@ -8,8 +8,10 @@ private val log = KotlinLogging.logger {}
 abstract class BatchProcessor<T, V> {
 
   open fun process(batch: List<T>) {
-    val transformed = transform(batch)
-    save(transformed)
+    val result = transform(batch)
+    if (result.isNotEmpty()) {
+      save(result)
+    }
   }
 
   abstract fun transform(batch: List<T>): List<V>
@@ -25,13 +27,23 @@ abstract class ProgressLoggingBatchProcessor<T, V>(
 ) : BatchProcessor<T, V>() {
 
   override fun process(batch: List<T>) {
-    logProgress { "Staring batch" }
+    if (batch.isEmpty()) {
+      logProgress { "Empty batch" }
+      return
+    }
+
     logProgress { "Transforming batch of ${batch.size} size" }
-    val transformed = transform(batch)
-    logProgress { "Saving batch of ${transformed.size} size" }
-    save(transformed)
-    logProgress { "Finished batch" }
-    current++
+    val result = transform(batch)
+    if (result.isEmpty()) {
+      logProgress { "Empty results" }
+      return
+    }
+
+    logProgress { "Saving results of ${result.size} size" }
+    save(result)
+    logProgress { "Saved results" }
+
+    recordProgress()
   }
 
   protected fun logProgress(message: () -> Any?) {
@@ -42,6 +54,10 @@ abstract class ProgressLoggingBatchProcessor<T, V>(
   private fun progress(): String {
     val progress = 100f * current / total
     return "%.2f%%".format(progress)
+  }
+
+  private fun recordProgress() {
+    current++
   }
 
 }
